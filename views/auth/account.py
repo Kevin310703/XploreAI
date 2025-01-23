@@ -1,7 +1,6 @@
 import streamlit as st
 import webbrowser
-from controllers.auth_controller import AuthController
-from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
 
 st.title("🌟 Welcome to XploreAI!")
 

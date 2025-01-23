@@ -39,3 +39,11 @@ class AuthController:
 
     def get_profile(self, username):
         return self.user_model.get_user_info(username)
+    
+    def change_password(self, username, old_password, new_password):
+        """ Đổi mật khẩu người dùng """
+        return self.user_model.update_password(username, old_password, new_password)
+
+    def update_profile(self, username, new_email):
+        """ Calls the UserModel to update profile information """
+        return self.user_model.update_user_info(username, new_email)

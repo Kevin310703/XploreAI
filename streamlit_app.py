@@ -45,13 +45,14 @@ summarization_text = st.Page("views/service/summarization-text.py", title="Summa
 
 # Account section
 profile_page = st.Page("views/auth/profile.py", title="Profile", icon=":material/person:")
+change_password_page = st.Page("views/auth/change_password.py", title="Change Password", icon=":material/key:")
 
 if st.session_state.logged_in:
     pg = st.navigation(
         {
             "Dashboard": [home_page],
             "Service": [translation, generate_image, summarization_text],
-            "Account": [profile_page],
+            "Account": [profile_page, change_password_page],
         }
     )
 else:

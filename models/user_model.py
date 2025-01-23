@@ -60,3 +60,32 @@ class UserModel:
         user_info = cursor.fetchone()
         conn.close()
         return user_info
+    
+    def update_password(self, username, old_password, new_password):
+        """ Cập nhật mật khẩu nếu mật khẩu cũ đúng """
+        conn, cursor = self.get_db_connection()
+        cursor.execute("SELECT password FROM up_users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+
+        if user and self.check_password(user["password"], old_password):
+            hashed_pw = self.hash_password(new_password)
+            cursor.execute("UPDATE up_users SET password = %s WHERE username = %s", (hashed_pw, username))
+            conn.commit()
+            conn.close()
+            return True
+        conn.close()
+        return False
+    
+    def update_user_info(self, username, new_email):
+        """ Update user information in the database """
+        conn, cursor = self.get_db_connection()
+        try:
+            cursor.execute("UPDATE up_users SET email = %s WHERE username = %s", (new_email, username))
+            conn.commit()
+            return True
+        except mysql.connector.Error as e:
+            return False
+        finally:
+            conn.close()
+
+
