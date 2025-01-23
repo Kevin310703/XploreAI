@@ -13,21 +13,21 @@ def logout():
         st.session_state.logged_in = False
         st.rerun()
 
-login_page = st.Page("page/auth/login.py", title="Log in", icon=":material/login:")
+login_page = st.Page("views/auth/account.py", title="Log in", icon=":material/login:", default=True)
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 
 # Model section
 translation = st.Page(
-    "page/models/translation-language.py", title="Translation", icon=":material/translate:", default=True
+    "views/service/translation-language.py", title="Translation", icon=":material/translate:"
 )
 generate_image = st.Page(
-    "page/models/generate-image.py", title="Create Image", icon=":material/image:"
+    "views/service/generate-image.py", title="Create Image", icon=":material/image:"
 )
 summarization_text = st.Page(
-    "page/models/summarization-text.py", title="Summarization", icon=":material/short_text:"
+    "views/service/summarization-text.py", title="Summarization", icon=":material/short_text:"
 )
 
-home_page = st.Page("page/dashboard/home.py", title="Home", icon=":material/home:")
+home_page = st.Page("views/dashboard/home.py", title="Home", icon=":material/home:")
 # search = st.Page("tools/search.py", title="Search", icon=":material/search:")
 # history = st.Page("tools/history.py", title="History", icon=":material/history:")
 

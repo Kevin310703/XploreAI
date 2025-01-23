@@ -10,3 +10,4 @@ python-dotenv
 streamlit-authenticator
 sqlite3
 hashlib
+mysql-connector-python

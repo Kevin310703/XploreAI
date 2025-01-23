@@ -27,3 +27,4 @@ Hướng dẫn chạy thử nghiệm trên local
 
 # Lưu ý:
 - Phải tạo check branch trước khi pull hoặc push code `git checkout <tên branch>`
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
