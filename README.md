@@ -16,7 +16,7 @@ Hướng dẫn chạy thử nghiệm trên local
 
 **Bước 4:** Cài đặt các thư viện cần dùng: `pip install -r requirements.txt` vào môi trường sản phẩm env. Nếu gặp lỗi 'pkg_resources' thì chạy lệnh `pip install --upgrade setuptools` trước.
 
-**Bước 5:** Chạy ứng dụng thử nghiệm trên local: `streamlit run app.py`
+**Bước 5:** Chạy ứng dụng thử nghiệm trên local: `streamlit run streamlit_app.py`
 
  Hoặc có thể chạy thử nghiệm để người dùng trong cùng một mạng có thể truy cập:
  - Đầu tiên mở port trên máy và để port thường là 8080 (Có thể tùy chỉnh)
