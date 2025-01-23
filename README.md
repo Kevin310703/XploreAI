@@ -1,8 +1,8 @@
-# X-AI
+# XploreAI
 
 Hướng dẫn chạy thử nghiệm trên local
 
-**Bước 1:** Clone git `git clone https://github.com/Kevin310703/X-AI`
+**Bước 1:** Clone git `git clone https://github.com/Kevin310703/XploreAI`
 
 **Bước 2:** Tạo branch  
 - Tạo branch mới: `git checkout -b <tên branch>`
@@ -27,4 +27,4 @@ Hướng dẫn chạy thử nghiệm trên local
 
 # Lưu ý:
 - Phải tạo check branch trước khi pull hoặc push code `git checkout <tên branch>`
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+- Chạy terminal bằng quyền Admin trên Windows: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
