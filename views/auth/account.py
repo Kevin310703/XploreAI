@@ -1,15 +1,9 @@
-import yaml
-from yaml.loader import SafeLoader
 import streamlit as st
-import streamlit_authenticator as stauth
 import webbrowser
 from controllers.auth_controller import AuthController
 from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
 
-# Page configuration
-st.set_page_config(page_title="Login", page_icon="🔑")
-
-st.title("🌟 Welcome to X-AI!")
+st.title("🌟 Welcome to XploreAI!")
 
 # Manage page state
 if "current_page" not in st.session_state:
@@ -20,7 +14,7 @@ def switch_page(page_name):
     st.session_state.current_page = page_name
     st.rerun()
 
-auth_controller = AuthController()
+auth_controller = st.session_state.auth_controller
 
 if st.session_state.current_page == "login":
     st.subheader("🔑 Login")
@@ -43,15 +37,15 @@ if st.session_state.current_page == "login":
             st.error("❌ Incorrect username or password!")
 
     st.markdown("---")
-    st.markdown("### 🌐 Or Sign in With")
+    st.markdown("### 🌐 Don't have an account? ")
 
     # Button to switch to the Register page
-    col1, col2 = st.columns([1, 1.3])
+    col1, col2 = st.columns([1, 3.4])
     with col1:
-        if st.button("👉 Don't have an account? Register now"):
+        if st.button("👉 Register now"):
             switch_page("register")
     with col2:
-        if st.button("👉 Forgot Password?"):
+        if st.button("👉 Forgot Password"):
             switch_page("forgot_password")
 
 elif st.session_state.current_page == "register":

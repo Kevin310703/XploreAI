@@ -52,3 +52,11 @@ class UserModel:
             return False
         finally:
             conn.close()
+
+    def get_user_info(self, username):
+        """ Truy vấn thông tin người dùng từ database """
+        conn, cursor = self.get_db_connection()
+        cursor.execute("SELECT username, email FROM up_users WHERE username = %s", (username,))
+        user_info = cursor.fetchone()
+        conn.close()
+        return user_info
