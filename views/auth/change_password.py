@@ -1,6 +1,6 @@
 import streamlit as st
 from controllers.auth_controller import AuthController
-from utils.validator import PasswordValidator
+from utils.validator import Validator
 
 st.title("🔑 Change Password")
 
@@ -28,7 +28,7 @@ if st.button("✅ Change Password"):
         st.error("New password and confirmation do not match. Please try again.")
     
     else:
-        is_valid, message = PasswordValidator.is_valid(new_password)
+        is_valid, message = Validator.is_valid(new_password)
         if not is_valid:
             st.error(f"⚠ {message}")  # Show validation error
         else:

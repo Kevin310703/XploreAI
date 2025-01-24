@@ -1,5 +1,8 @@
 import streamlit as st
 import webbrowser
+from utils.validator import Validator
+from utils.email_sender import EmailSender
+import urllib.parse
 from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
 
 st.title("🌟 Welcome to XploreAI!")
@@ -27,13 +30,24 @@ if st.session_state.current_page == "login":
         switch_page("forgot_password")
 
     if st.button("Login ✨"):
-        if auth_controller.login_user(username, password):
-            st.success(f"🎉 Welcome {username}! You have successfully logged in.")
-            st.session_state["logged_in"] = True
-            st.session_state["username"] = username
-            st.rerun()
+        is_valid, message = Validator.is_valid_password(password)
+
+        if not username.strip():
+            st.warning("⚠️ Please enter your username!")
+        elif not Validator.is_valid_username(username):
+            st.error("⚠️ Invalid username! Username must be 4-20 characters long and can only contain letters, numbers, spaces, underscores (_), or dashes (-). It cannot start or end with a space, nor have consecutive spaces.")
+        elif not password.strip():
+            st.warning("⚠️ Please enter your password!")
+        elif not is_valid:
+            st.error(f"⚠️ {message}")
         else:
-            st.error("❌ Incorrect username or password!")
+            if auth_controller.login_user(username, password):
+                st.success(f"🎉 Welcome {username}! You have successfully logged in.")
+                st.session_state["logged_in"] = True
+                st.session_state["username"] = username
+                st.rerun()
+            else:
+                st.error("❌ Incorrect username or password!")
 
     st.markdown("---")
     st.markdown("### 🌐 Don't have an account? ")
@@ -92,15 +106,24 @@ elif st.session_state.current_page == "forgot_password":
     st.subheader("🔑 Forgot Password?")
     st.write("No worries! Enter your email or username, and we'll help you reset your password.")
 
-    recovery_input = st.text_input("📧 Enter your email or username", key="forgot_email")
+    recovery_email = st.text_input("Enter your email", key="forgot_email")
 
     if st.button("Reset Password 🔄"):
-        if recovery_input:
-            st.success("✅ If an account exists with this email/username, you will receive reset instructions.")
-            st.info("📩 Please check your inbox (or spam folder) for further instructions.")
-            switch_page("login")
+        if not recovery_email.strip():
+            st.warning("⚠️ Please enter your email!")
+        elif not Validator.is_valid_email(recovery_email):
+            st.error("❌ Invalid email format!")
         else:
-            st.warning("⚠️ Please enter your email or username!")
+            reset_link = f"http://localhost:8501/auth/reset-password?email={urllib.parse.quote(recovery_email)}"
+            success, message = EmailSender.send_reset_email(recovery_email, reset_link)
 
+            if success:
+                st.success("✅ If an account exists with this email/username, you will receive reset instructions.")
+                st.info("📩 Please check your inbox (or spam folder) for further instructions.")
+                switch_page("login")
+            else:
+                st.error(message)
+
+    st.markdown("---")
     if st.button("🔙 Back to Login"):
         switch_page("login")
