@@ -1,5 +1,6 @@
 import streamlit as st
 import webbrowser
+import time
 from utils.validator import Validator
 from utils.email_sender import EmailSender
 import urllib.parse
@@ -78,13 +79,47 @@ elif st.session_state.current_page == "register":
     confirm_password = st.text_input("Confirm password", type="password", key="register_confirm_pass")
 
     if st.button("Create Account ✨"):
+        errors = []
+
+        # Kiểm tra tên
+        if not first_name.strip() or not last_name.strip():
+            errors.append("⚠️ First name and Last name cannot be empty!")
+        elif not Validator.is_valid_name(first_name) or not Validator.is_valid_name(last_name):
+            errors.append("⚠️ Name should only contain letters and spaces, no numbers or special characters.")
+
+        # Kiểm tra email
+        if not email.strip():
+            errors.append("⚠️ Email cannot be empty!")
+        elif not Validator.is_valid_email(email):
+            errors.append("❌ Invalid email format!")
+
+        # Kiểm tra username
+        if not username.strip():
+            errors.append("⚠️ Username cannot be empty!")
+        elif not Validator.is_valid_username(username):
+            errors.append("❌ Username must be 4-20 characters long and can only contain letters, numbers, spaces, underscores (_), or dashes (-). It cannot start or end with a space, nor have consecutive spaces.")
+
+        # Kiểm tra mật khẩu
+        is_valid_pass, pass_message = Validator.is_valid_password(new_password)
+        if not new_password.strip():
+            errors.append("⚠️ Password cannot be empty!")
+        elif not is_valid_pass:
+            errors.append(pass_message)
+
+        # Kiểm tra mật khẩu nhập lại
         if new_password != confirm_password:
-            st.warning("⚠️ Passwords do not match!")
-        elif auth_controller.register_user(username, new_password):
-            st.success("✅ Registration successful! Please log in.")
-            switch_page("login")
+            errors.append("⚠️ Passwords do not match!")
+
+        # Hiển thị tất cả lỗi nếu có
+        if errors:
+            for error in errors:
+                st.warning(error)
         else:
-            st.error("❌ Username already exists!")
+            if auth_controller.register_user(username, new_password):
+                st.success("✅ Registration successful! Please log in.")
+                switch_page("login")
+            else:
+                st.error("❌ Username already exists!")
 
     st.markdown("---")
 
@@ -104,7 +139,7 @@ elif st.session_state.current_page == "register":
 
 elif st.session_state.current_page == "forgot_password":
     st.subheader("🔑 Forgot Password?")
-    st.write("No worries! Enter your email or username, and we'll help you reset your password.")
+    st.write("No worries! Enter your email, and we'll help you reset your password.")
 
     recovery_email = st.text_input("Enter your email", key="forgot_email")
 
@@ -114,12 +149,11 @@ elif st.session_state.current_page == "forgot_password":
         elif not Validator.is_valid_email(recovery_email):
             st.error("❌ Invalid email format!")
         else:
-            reset_link = f"http://localhost:8501/auth/reset-password?email={urllib.parse.quote(recovery_email)}"
-            success, message = EmailSender.send_reset_email(recovery_email, reset_link)
+            success, message = auth_controller.reset_password(recovery_email)
 
             if success:
-                st.success("✅ If an account exists with this email/username, you will receive reset instructions.")
-                st.info("📩 Please check your inbox (or spam folder) for further instructions.")
+                st.success("✅ A new password has been sent to your email. Please check your inbox.")
+                time.sleep(5)
                 switch_page("login")
             else:
                 st.error(message)

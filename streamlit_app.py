@@ -8,6 +8,11 @@ ICON_LOGO = "assets/image/icon_logo.png"
 
 st.logo(HORIZONTAL_LOGO, icon_image=ICON_LOGO)
 
+query_params = st.query_params
+
+if "email" in query_params:
+    st.switch_page("C:/Users/Admin/Documents/GitHub/XploreAI/pages/reset_password.py")
+
 # Chỉ tạo một AuthController duy nhất trong session_state
 if "auth_controller" not in st.session_state:
     st.session_state.auth_controller = AuthController()

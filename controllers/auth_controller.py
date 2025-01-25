@@ -1,5 +1,6 @@
 import extra_streamlit_components as stx
 from models.user_model import UserModel
+from utils.email_sender import EmailSender
 
 class AuthController:
     _cookie_manager = None  # Biến static để quản lý cookie
@@ -47,3 +48,14 @@ class AuthController:
     def update_profile(self, username, new_email):
         """ Calls the UserModel to update profile information """
         return self.user_model.update_user_info(username, new_email)
+    
+    def reset_password(self, email):
+        """Tạo mật khẩu mới, đảm bảo nó là duy nhất, sau đó gửi qua email"""
+        new_password = EmailSender.generate_password()  # Tạo mật khẩu trước
+
+        updated_password = self.user_model.update_password_auto(email, new_password)
+
+        if updated_password:
+            email_sent, msg = EmailSender.send_reset_email(email, updated_password)
+            return email_sent, msg
+        return False, "❌ Failed to update password."
