@@ -36,6 +36,16 @@ class Validator:
         """
         pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         return bool(re.match(pattern, email))
+    
+    @staticmethod
+    def is_valid_name(name):
+        """
+        Kiểm tra tên hợp lệ:
+        - Chỉ chứa chữ cái (không số, không ký tự đặc biệt)
+        - Không có khoảng trắng thừa ở đầu/cuối
+        - Độ dài từ 2-30 ký tự
+        """
+        return bool(re.match(r"^[A-Za-zÀ-Ỹà-ỹ\s]{2,30}$", name.strip()))
 
     @staticmethod
     def is_valid_username(username):

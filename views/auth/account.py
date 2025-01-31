@@ -117,6 +117,7 @@ elif st.session_state.current_page == "register":
         else:
             if auth_controller.register_user(username, new_password):
                 st.success("✅ Registration successful! Please log in.")
+                time.sleep(5)
                 switch_page("login")
             else:
                 st.error("❌ Username already exists!")
