@@ -225,6 +225,9 @@ python manage.py runserver
 📌 API Endpoint sẽ chạy tại:
 
 Admin Panel: http://127.0.0.1:8000/admin/
+
 Đăng ký: POST http://127.0.0.1:8000/api/users/register/
+
 Đăng nhập: POST http://127.0.0.1:8000/api/users/login/
+
 Đăng xuất: POST http://127.0.0.1:8000/api/users/logout/
