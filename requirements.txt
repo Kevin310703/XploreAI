@@ -10,3 +10,5 @@ djangorestframework
 djangorestframework-simplejwt
 mysqlclient
 django-cors-headers
+matplotlib
+plotly

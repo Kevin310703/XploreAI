@@ -1,35 +1,52 @@
 import streamlit as st
 st.set_page_config(page_title="XploreAI", page_icon="👋")
 
-from controllers.auth_controller import AuthController
+import extra_streamlit_components as stx
+import requests
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+API_BASE_URL = os.getenv("API_BASE_URL")
 
 HORIZONTAL_LOGO = "assets/image/horizontal_logo.png"
 ICON_LOGO = "assets/image/icon_logo.png"
 
 st.logo(HORIZONTAL_LOGO, icon_image=ICON_LOGO)
 
-query_params = st.query_params
-
-if "email" in query_params:
-    st.switch_page("C:/Users/Admin/Documents/GitHub/XploreAI/pages/reset_password.py")
-
-# Chỉ tạo một AuthController duy nhất trong session_state
-if "auth_controller" not in st.session_state:
-    st.session_state.auth_controller = AuthController()
-
-auth_controller = st.session_state.auth_controller
+cookie_manager = stx.CookieManager()
 
 # Tải trạng thái đăng nhập
 if "logged_in" not in st.session_state:
-    st.session_state.logged_in, st.session_state.username = auth_controller.load_cookie()
-    print(st.session_state.logged_in)
-    print(st.session_state.username)
+    access_token = cookie_manager.get("access_token")
+    username = cookie_manager.get("username")
+
+    if access_token and username:
+        st.session_state.logged_in = True
+        st.session_state.username = username
+        st.session_state.access_token = access_token
+    else:
+        st.session_state.logged_in = False
+        st.session_state.username = None
 
 def logout():
-    auth_controller.clear_cookie()
-    st.session_state.logged_in = False
-    st.session_state.username = None
-    st.rerun()
+    access_token = st.session_state.get("access_token", None)
+
+    if access_token:
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.post(f"{API_BASE_URL}/logout/", headers=headers)
+
+        if response.status_code == 200:
+            st.success("✅ Logged out successfully.")
+            cookie_manager.delete("access_token")
+            cookie_manager.delete("username")
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.rerun()
+        else:
+            st.error("❌ Logout failed! Please try again.")
+    else:
+        st.warning("⚠️ You are not logged in!")
 
 if st.session_state.logged_in:
     with st.sidebar:

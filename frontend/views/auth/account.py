@@ -1,10 +1,18 @@
 import streamlit as st
+import os
 import webbrowser
 import time
 from utils.validator import Validator
-from utils.email_sender import EmailSender
-import urllib.parse
 from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_BASE_URL = os.getenv("API_BASE_URL")
+
+if not API_BASE_URL:
+    raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 st.title("🌟 Welcome to XploreAI!")
 
@@ -16,8 +24,6 @@ if "current_page" not in st.session_state:
 def switch_page(page_name):
     st.session_state.current_page = page_name
     st.rerun()
-
-auth_controller = st.session_state.auth_controller
 
 if st.session_state.current_page == "login":
     st.subheader("🔑 Login")
@@ -42,10 +48,18 @@ if st.session_state.current_page == "login":
         elif not is_valid:
             st.error(f"⚠️ {message}")
         else:
-            if auth_controller.login_user(username, password):
-                st.success(f"🎉 Welcome {username}! You have successfully logged in.")
+            response = requests.post(f"{API_BASE_URL}/login/", json={
+                "username": username,
+                "password": password
+            })
+
+            if response.status_code == 200:
+                data = response.json()
+                st.session_state["access_token"] = data["access"]
+                st.session_state["refresh_token"] = data["refresh"]
                 st.session_state["logged_in"] = True
-                st.session_state["username"] = username
+                st.success(f"🎉 Welcome {username}! You have successfully logged in.")
+                time.sleep(5)
                 st.rerun()
             else:
                 st.error("❌ Incorrect username or password!")
@@ -115,12 +129,22 @@ elif st.session_state.current_page == "register":
             for error in errors:
                 st.warning(error)
         else:
-            if auth_controller.register_user(username, new_password):
+            response = requests.post(f"{API_BASE_URL}/register/", json={
+                "username": username,
+                "email": email,
+                "password": new_password,
+                "first_name": first_name,
+                "last_name": last_name
+            })
+
+            if response.status_code == 201:
                 st.success("✅ Registration successful! Please log in.")
                 time.sleep(5)
                 switch_page("login")
+            elif response.status_code == 400:
+                st.error(f"❌ {response.json().get('error', 'Registration failed!')}")
             else:
-                st.error("❌ Username already exists!")
+                st.error("❌ Unexpected error! Please try again.")
 
     st.markdown("---")
 
@@ -150,14 +174,23 @@ elif st.session_state.current_page == "forgot_password":
         elif not Validator.is_valid_email(recovery_email):
             st.error("❌ Invalid email format!")
         else:
-            success, message = auth_controller.reset_password(recovery_email)
+            try:
+                response = requests.post(f"{API_BASE_URL}/forgot_password/", json={"email": recovery_email})
 
-            if success:
-                st.success("✅ A new password has been sent to your email. Please check your inbox.")
-                time.sleep(5)
-                switch_page("login")
-            else:
-                st.error(message)
+                if response.status_code == 200:
+                    st.success("✅ A new password has been sent to your email. Please check your inbox.")
+                    time.sleep(5)
+                    switch_page("login")
+                else:
+                    try:
+                        error_message = response.json().get("error", "❌ Error processing request!")
+                    except requests.exceptions.JSONDecodeError:
+                        error_message = f"❌ API Error: {response.status_code} - {response.text}"
+
+                    st.error(error_message)
+
+            except requests.exceptions.RequestException as e:
+                st.error(f"❌ Connection Error: {str(e)}")
 
     st.markdown("---")
     if st.button("🔙 Back to Login"):
