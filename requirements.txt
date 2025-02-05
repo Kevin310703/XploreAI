@@ -12,3 +12,4 @@ mysqlclient
 django-cors-headers
 matplotlib
 plotly
+django-redis

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # Django REST Framework
     "rest_framework",
     "rest_framework_simplejwt",
+    'rest_framework_simplejwt.token_blacklist',
     "corsheaders",
 
     # Ứng dụng Users
@@ -60,9 +61,11 @@ REST_FRAMEWORK = {
 
 # Cấu hình JWT Token
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 # Cấu hình CORS để frontend (Streamlit) có thể gọi API

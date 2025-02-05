@@ -13,7 +13,19 @@ if not API_URL:
 
 st.title("📝 AI Language Translation - English to Vietnamese")
 
-input_text = st.text_area("Enter the English text to translate:", height=150)
+# 📌 Thêm phần hướng dẫn sử dụng
+with st.expander("ℹ️ Hướng dẫn sử dụng", expanded=False):
+    st.markdown("""
+        🔹 **Bước 1:** Nhập đoạn văn bản tiếng Anh vào ô bên dưới.  
+        🔹 **Bước 2:** Nhấn nút **"Translate Now 🏆"** để bắt đầu dịch.  
+        🔹 **Bước 3:** Văn bản dịch sang tiếng Việt sẽ hiển thị ngay lập tức.  
+
+        ⚠️ **Lưu ý:**  
+        - Hệ thống hỗ trợ dịch văn bản chuẩn và có dấu câu đầy đủ để có kết quả tốt nhất.  
+        - Nếu gặp lỗi, vui lòng kiểm tra lại API hoặc đảm bảo kết nối mạng ổn định.  
+    """)
+    
+input_text = st.text_area("Enter the English text to translate:", height=150, placeholder="Translation from English to Vietnamese: ...")
 
 if st.button("Translate Now 🏆"):
     if input_text.strip():

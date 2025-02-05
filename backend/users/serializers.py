@@ -45,3 +45,8 @@ class ForgotPasswordSerializer(serializers.Serializer):
         # Gửi email cho người dùng
         success, message = EmailSender.send_reset_email(email, new_password)
         return success, message
+    
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email']

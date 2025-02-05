@@ -51,11 +51,9 @@ class Validator:
     def is_valid_username(username):
         """
         Kiểm tra username hợp lệ:
-        - Chỉ chứa chữ cái, số, dấu gạch dưới (_), dấu gạch ngang (-), và khoảng trắng.
-        - Độ dài từ 4-20 ký tự.
-        - Không chứa khoảng trắng ở đầu hoặc cuối.
-        - Không có nhiều khoảng trắng liên tiếp.
+        - Tối đa 150 ký tự.
+        - Chỉ chứa chữ cái, số, @, ., +, -, _
         """
-        pattern = r"^(?!\s)(?!.*\s{2})[a-zA-Z0-9 _-]{4,20}(?<!\s)$"
+        pattern = r"^[a-zA-Z0-9@.+\-_]{1,150}$"
         return bool(re.match(pattern, username))
 
