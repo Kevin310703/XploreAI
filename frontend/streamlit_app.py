@@ -1,12 +1,7 @@
 import streamlit as st
 import extra_streamlit_components as stx
 import requests
-from dotenv import load_dotenv
-import os
-import time
-
-load_dotenv()
-API_BASE_URL = os.getenv("API_BASE_URL")
+from config import API_BASE_URL
 
 # Config page
 st.set_page_config(
@@ -15,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Logo của ứng dụng
+# Logo app
 HORIZONTAL_LOGO = "assets/image/horizontal_logo.png"
 ICON_LOGO = "assets/image/icon_logo.png"
 st.logo(HORIZONTAL_LOGO, icon_image=ICON_LOGO)

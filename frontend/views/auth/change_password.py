@@ -2,12 +2,11 @@ import time
 import streamlit as st
 import os
 import requests
-from dotenv import load_dotenv
 from utils.validator import Validator
+from config import API_BASE_URL
 
-load_dotenv()
-
-API_BASE_URL = os.getenv("API_BASE_URL")
+if not API_BASE_URL:
+    raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 st.title("🔑 Change Password")
 
@@ -33,9 +32,9 @@ if not st.session_state.auth.get("logged_in"):
 st.write(f"👤 Logged in as **{st.session_state.auth["username"]}**")
 
 # Input fields for changing password
-old_password = st.text_input("🔒 Current Password", type="password")
-new_password = st.text_input("🔑 New Password", type="password")
-confirm_password = st.text_input("🔑 Confirm New Password", type="password")
+old_password = st.text_input("Current Password", type="password")
+new_password = st.text_input("New Password", type="password")
+confirm_password = st.text_input("Confirm New Password", type="password")
 
 if st.button("✅ Change Password"):
     if not old_password or not new_password or not confirm_password:

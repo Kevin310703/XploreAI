@@ -1,12 +1,11 @@
+import time
 import streamlit as st
 import requests
-import os
-from dotenv import load_dotenv
+from config import API_BASE_URL
 from utils.validator import Validator
 
-# Load env variable
-load_dotenv()
-API_BASE_URL = os.getenv("API_BASE_URL")
+if not API_BASE_URL:
+    raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 if "cookie_manager" not in st.session_state:
     import extra_streamlit_components as stx
@@ -39,28 +38,60 @@ response = requests.get(f"{API_BASE_URL}/profile/", headers=headers)
 
 if response.status_code == 200:
     user_info = response.json()
+    
+    avatar_url = f"http://127.0.0.1:8000{user_info['avatar']}" if user_info.get("avatar") else "assets/image/default_avatar.jpg"
+
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        st.image("assets/image/default_avatar.jpg", width=150, caption="Default Avatar")
+        html_code = f"""
+            <style>
+            .round-img {{
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #blue;
+            }}
+            </style>
+            <img src="{avatar_url}" class="round-img" alt="Avatar">
+        """
+
+        st.markdown(html_code, unsafe_allow_html=True)
 
     with col2:
         st.markdown(f"### Welcome, **{user_info['username']}**")
         st.write(f"📧 **Email:** {user_info['email']}")
 
-    # Input field
+    # Upload Avatar
+    st.markdown("---")
+    st.subheader("🖼️ Upload New Avatar")
+    uploaded_file = st.file_uploader("Choose a profile picture", type=["png", "jpg", "jpeg"])
+
+    if uploaded_file is not None:
+        if st.button("Upload Avatar"):
+            files = {"avatar": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
+            response = requests.put(f"{API_BASE_URL}/profile/avatar/", headers=headers, files=files)
+
+            if response.status_code == 200:
+                st.success("✅ Avatar updated successfully!")
+                time.sleep(4)
+                st.rerun()
+            else:
+                st.error(f"⚠️ Unable to update avatar. Error: {response.text}")
+
+    # Upload information
     st.markdown("---")
     st.subheader("✏ Edit Profile")
 
-    new_first_name = st.text_input("📝 First Name", value=user_info.get('first_name', ''))
-    new_last_name = st.text_input("📝 Last Name", value=user_info.get('last_name', ''))
-    new_username = st.text_input("👤 Username", value=user_info.get('username', ''))
-    new_email = st.text_input("📧 Email", value=user_info.get('email', ''))
+    new_first_name = st.text_input("First Name", value=user_info.get('first_name', ''))
+    new_last_name = st.text_input("Last Name", value=user_info.get('last_name', ''))
+    new_username = st.text_input("Username", value=user_info.get('username', ''))
+    new_email = st.text_input("Email", value=user_info.get('email', ''))
 
     if st.button("💾 Save Changes"):
         errors = []
 
-        # Check input with validator
         if not Validator.is_valid_name(new_first_name):
             errors.append("❌ First Name is invalid. Only letters and spaces (2-30 characters) are allowed.")
         
@@ -90,12 +121,11 @@ if response.status_code == 200:
             if update_response.status_code == 200:
                 st.success("✅ Profile updated successfully!")
                 st.session_state.auth["username"] = new_username
-                st.experimental_rerun()
+                time.sleep(4)
+                st.rerun()
             else:
                 st.error("⚠️ Unable to update profile. Please try again later.")
 
     st.markdown("---")
-    if st.button("🔙 Back to Home"):
-        st.switch_page("views/dashboard/home.py")
 else:
     st.error("❌ Unable to load profile information.")

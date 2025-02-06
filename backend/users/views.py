@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render
 
 # Create your views here.
@@ -9,7 +10,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .serializers import ForgotPasswordSerializer, UserProfileSerializer, UserSerializer
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from .serializers import ForgotPasswordSerializer, UserAvatarSerializer, UserProfileSerializer, UserSerializer
+
+from .utils.helper import validate_avatar
 
 User = get_user_model()
 
@@ -53,7 +57,7 @@ class ForgotPasswordView(generics.GenericAPIView):
                 return Response({"error": message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class UserProfileUpdateView(generics.CreateAPIView):
+class UserProfileUpdateView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -68,6 +72,40 @@ class UserProfileUpdateView(generics.CreateAPIView):
             serializer.save()
             return Response({"message": "Profile updated successfully!", "data": serializer.data})
         return Response(serializer.errors, status=400)
+    
+class UserAvatarUpdateView(generics.UpdateAPIView):
+    """
+    API endpoint update avatar user.
+    """
+    serializer_class = UserAvatarSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        avatar = request.FILES.get("avatar")
+        if not avatar:
+            return Response({"error": "Avatar file is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Validate file avatar
+            validated_avatar = validate_avatar(avatar)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Nếu user đã có avatar khác mặc định, xóa avatar cũ
+        if user.avatar and user.avatar.name != "avatars/default_avatar.jpg":
+            user.avatar.delete(save=False)
+        
+        # Cập nhật avatar mới
+        user.avatar = validated_avatar
+        user.save()
+        
+        serializer = self.get_serializer(user)
+        return Response({"message": "Avatar updated successfully!", "data": serializer.data}, status=status.HTTP_200_OK)
     
 class ChangePasswordView(generics.CreateAPIView):
     authentication_classes = [JWTAuthentication]

@@ -4,27 +4,23 @@ import webbrowser
 import time
 import requests
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
 from utils.validator import Validator
-from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
+from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, API_BASE_URL
 
-load_dotenv()
-API_BASE_URL = os.getenv("API_BASE_URL")
 if not API_BASE_URL:
     raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 st.title("🌟 Welcome to XploreAI!")
 
-# Lấy cookie_manager từ session_state (đã được khởi tạo trong app.py)
+# Get cookie manager from session state (in streamlit_app.py)
 cookie_manager = st.session_state.cookie_manager
 
-# Hàm cập nhật thông tin đăng nhập vào session và cookie
 def set_auth_cookies(username, access_token, refresh_token, days_valid=7):
     expires_at = datetime.utcnow() + timedelta(days=days_valid)
     cookie_manager.set("access_token", access_token, key="access_token_set", expires_at=expires_at)
     cookie_manager.set("refresh_token", refresh_token, key="refresh_token_set", expires_at=expires_at)
     cookie_manager.set("username", username, key="username_set", expires_at=expires_at)
-    # Cập nhật lại session auth sau khi set cookie
+
     st.session_state.auth = {
         "logged_in": True,
         "username": username,
@@ -32,7 +28,7 @@ def set_auth_cookies(username, access_token, refresh_token, days_valid=7):
         "refresh_token": refresh_token
     }
 
-# Quản lý trạng thái trang hiện tại: login, register, forgot_password
+# Management page: login, register, forgot_password
 if "current_page" not in st.session_state:
     st.session_state.current_page = "login"
 
@@ -49,7 +45,6 @@ if st.session_state.current_page == "login":
     remember_me = st.checkbox("Remember Me", key="remember_me")
 
     if st.button("Login ✨"):
-        # Kiểm tra dữ liệu đầu vào
         if not username.strip():
             st.warning("⚠️ Please enter your username!")
         elif not Validator.is_valid_username(username):

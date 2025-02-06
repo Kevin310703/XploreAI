@@ -31,9 +31,14 @@ DEBUG = os.getenv("DEBUG") == "True"
 
 ALLOWED_HOSTS = []
 
+# Thư mục lưu trữ ảnh tải lên
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# Cấu hình sử dụng FileSystemStorage
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,18 +53,18 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     "corsheaders",
 
-    # Ứng dụng Users
+    # Users
     "users",
 ]
 
-# Cấu hình REST Framework
+# REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 
-# Cấu hình JWT Token
+# JWT Token
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -68,7 +73,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# Cấu hình CORS để frontend (Streamlit) có thể gọi API
+# Config CORS for frontend (Streamlit) call API
 CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
