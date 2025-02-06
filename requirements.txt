@@ -8,7 +8,7 @@ mysql-connector-python
 django
 djangorestframework
 djangorestframework-simplejwt
-mysqlclient
+mysql-connector-python
 django-cors-headers
 matplotlib
 plotly
