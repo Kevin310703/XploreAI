@@ -3,6 +3,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
+# Loading env
 load_dotenv()
 API_URL = os.getenv("TRANSLATE_API")
 
@@ -10,38 +11,46 @@ if not API_URL:
     st.error("❌ Error: API_URL is not configured in the .env file.")
     st.stop()
 
-st.title("📝 AI Language Translation - English to Vietnamese")
+# Component of page
+st.title("📝 AI Language Translation")
 
-# 📌 Thêm phần hướng dẫn sử dụng
-with st.expander("ℹ️ Hướng dẫn sử dụng", expanded=False):
+with st.expander("ℹ️ How to Use", expanded=False):
     st.markdown("""
-        🔹 **Bước 1:** Nhập đoạn văn bản tiếng Anh vào ô bên dưới.  
-        🔹 **Bước 2:** Nhấn nút **"Translate Now 🏆"** để bắt đầu dịch.  
-        🔹 **Bước 3:** Văn bản dịch sang tiếng Việt sẽ hiển thị ngay lập tức.  
+        🔹 **Step 1:** Choose the translation direction (English → Vietnamese or Vietnamese → English).  
+        🔹 **Step 2:** Enter the text in the input box below.  
+        🔹 **Step 3:** Click **"Translate Now 🏆"** to start the translation.  
+        🔹 **Step 4:** The translated text will be displayed instantly.  
 
-        ⚠️ **Lưu ý:**  
-        - Hệ thống hỗ trợ dịch văn bản chuẩn và có dấu câu đầy đủ để có kết quả tốt nhất.  
-        - Nếu gặp lỗi, vui lòng kiểm tra lại API hoặc đảm bảo kết nối mạng ổn định.  
+        ⚠️ **Note:**  
+        - The system provides the best results when translating well-formed sentences with correct punctuation.  
+        - If you encounter errors, please check the API connection or ensure a stable internet connection.  
     """)
-    
-input_text = st.text_area("Enter the English text to translate:", 
-                          height=200, 
-                          placeholder="Translation from English to Vietnamese: ...")
+
+translation_direction = st.selectbox("Select Translation Direction:", 
+                                     ["English → Vietnamese", "Vietnamese → English"])
+
+placeholder_text = ("Translate English text to translate to Vietnamese..." if translation_direction == "English → Vietnamese"
+                    else "Nhập văn bản tiếng Việt để dịch sang tiếng Anh...")
+
+input_text = st.text_area("Enter your text:", height=200, placeholder=placeholder_text)
 
 if st.button("Translate Now 🏆"):
-    if input_text.strip():
-        # Send request to API
-        payload = {"text": input_text}
-        response = requests.post(API_URL, json=payload)
+    with st.spinner("⏳ Processing..."):
+        if input_text.strip():
+            language_pair = "en-vi" if translation_direction == "English → Vietnamese" else "vi-en"
 
-        if response.status_code == 200:
-            translated_text = response.json().get("translated_text", "Unknown error")
-            st.success("✅ Translation:")
-            st.write(f"**{translated_text}**")
+            payload = {"text": input_text}
+            response = requests.post(API_URL, json=payload)
+
+            if response.status_code == 200:
+                translated_text = response.json().get("translated_text", "Unknown error")
+                st.success("✅ Translated Text:")
+                st.write(f"**{translated_text}**")
+            else:
+                st.error("❌ Unable to translate. Please check the API.")
         else:
-            st.error("❌ Unable to translate. Please check the API.")
-    else:
-        st.warning("⚠️ Please enter text to translate!")
+            st.warning("⚠️ Please enter text to translate!")
 
+# Footer Section
 st.markdown("---")
-st.markdown("🚀 **This application uses the AI translation model - T5 finetuned en-vi.**")
+st.markdown("🚀 **This application uses an AI translation model.**")

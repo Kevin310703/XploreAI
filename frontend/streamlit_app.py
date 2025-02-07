@@ -94,15 +94,17 @@ home_page = st.Page("views/dashboard/home.py", title="Home", icon=":material/hom
 
 # Service page
 translation_page = st.Page("views/service/translation-language.py", title="Translation", icon=":material/translate:")
-generate_image_page = st.Page("views/service/generate-image.py", title="Create Image", icon=":material/image:")
+generate_image_page = st.Page("views/service/generate-image.py", title="Generate Image", icon=":material/image:")
 summarization_page = st.Page("views/service/summarization-text.py", title="Summarization", icon=":material/short_text:")
+vqa_page = st.Page("views/service/visual-question-answer.py", title="Q&A", icon=":material/visibility:")
+generate_text_page = st.Page("views/service/generate-text.py", title="Generate Text", icon=":material/chat:")
 
 # Navigation
 if st.session_state.auth["logged_in"]:
     pg = st.navigation(
         {
             "Dashboard": [home_page],
-            "Service": [translation_page, generate_image_page, summarization_page],
+            "Service": [translation_page, generate_image_page, generate_text_page, summarization_page, vqa_page],
             "Account": [profile_page, change_password_page],
         }
     )
