@@ -1,15 +1,9 @@
 import streamlit as st
-import os
 import requests
-from dotenv import load_dotenv
+from config import API_BASE_URL_CONTAINER
 
-# Loading env
-load_dotenv()
-API_URL = os.getenv("TRANSLATE_API")
-
-if not API_URL:
-    st.error("❌ Error: API_URL is not configured in the .env file.")
-    st.stop()
+if not API_BASE_URL_CONTAINER:
+    raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
 st.title("📝 AI Language Translation")
@@ -40,7 +34,7 @@ if st.button("Translate Now 🏆"):
             language_pair = "en-vi" if translation_direction == "English → Vietnamese" else "vi-en"
 
             payload = {"text": input_text}
-            response = requests.post(API_URL, json=payload)
+            response = requests.post(f"{API_BASE_URL_CONTAINER}/translate", json=payload)
 
             if response.status_code == 200:
                 translated_text = response.json().get("translated_text", "Unknown error")

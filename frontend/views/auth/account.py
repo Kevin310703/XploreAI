@@ -5,9 +5,9 @@ import time
 import requests
 from datetime import datetime, timedelta
 from utils.validator import Validator
-from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, API_BASE_URL
+from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, API_BASE_URL_BACKEND
 
-if not API_BASE_URL:
+if not API_BASE_URL_BACKEND:
     raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 st.title("🌟 Welcome to XploreAI!")
@@ -52,7 +52,7 @@ if st.session_state.current_page == "login":
         elif not password.strip():
             st.warning("⚠️ Please enter your password!")
         else:
-            response = requests.post(f"{API_BASE_URL}/login/", json={
+            response = requests.post(f"{API_BASE_URL_BACKEND}/login/", json={
                 "username": username,
                 "password": password
             })
@@ -120,7 +120,7 @@ elif st.session_state.current_page == "register":
             for error in errors:
                 st.warning(error)
         else:
-            response = requests.post(f"{API_BASE_URL}/register/", json={
+            response = requests.post(f"{API_BASE_URL_BACKEND}/register/", json={
                 "username": username,
                 "email": email,
                 "password": new_password,
@@ -163,7 +163,7 @@ elif st.session_state.current_page == "forgot_password":
             st.error("❌ Invalid email format!")
         else:
             try:
-                response = requests.post(f"{API_BASE_URL}/forgot-password/", json={"email": recovery_email})
+                response = requests.post(f"{API_BASE_URL_BACKEND}/forgot-password/", json={"email": recovery_email})
                 if response.status_code == 200:
                     st.success("✅ A new password has been sent to your email.")
                     time.sleep(2)

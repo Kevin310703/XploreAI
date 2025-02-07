@@ -1,15 +1,9 @@
 import streamlit as st
 import requests
-import os
-from dotenv import load_dotenv
+from config import API_BASE_URL_CONTAINER
 
-# Loading env
-load_dotenv()
-API_URL = os.getenv("SUMMARIZE_API")
-
-if not API_URL:
-    st.error("❌ Error: API_URL is not configured in the .env file.")
-    st.stop()
+if not API_BASE_URL_CONTAINER:
+    raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
 st.title("📖 Text Summarization")
@@ -22,7 +16,7 @@ if st.button("Summarize 📌"):
             payload = {"text": input_text}
             
             try:
-                response = requests.post(API_URL, json=payload, timeout=120)
+                response = requests.post(f"{API_BASE_URL_CONTAINER}/summarize", json=payload, timeout=120)
 
                 if response.status_code == 200:
                     summary = response.json().get("summary", "Unknown error")

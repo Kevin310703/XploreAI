@@ -2,17 +2,10 @@ import streamlit as st
 import requests
 import io
 from PIL import Image
-import os
-from dotenv import load_dotenv
+from config import API_BASE_URL_CONTAINER
 
-# Loading env
-load_dotenv()
-API_URL = os.getenv("GENERATE_IMAGE_API")
-API_URL_IMAGE = os.getenv("API_CONTAINER")
-
-if not API_URL:
-    st.error("❌ Error: API_URL is not configured in the .env file.")
-    st.stop()
+if not API_BASE_URL_CONTAINER:
+    raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
 st.title("🎨 Image Generator - Stable Diffusion")
@@ -23,20 +16,20 @@ if st.button("Generate Image 🚀"):
     with st.spinner("⏳ Processing..."):
         if prompt.strip():
             payload = {"prompt": prompt}
-            response = requests.post(API_URL, json=payload)
+            response = requests.post(f"{API_BASE_URL_CONTAINER}/generate-image", json=payload)
 
             if response.status_code == 200:
                 image_url = response.json().get("image_url", None)
 
                 if image_url:
-                    full_image_url = f"{API_URL_IMAGE}{image_url}"
+                    full_image_url = f"{API_BASE_URL_CONTAINER}{image_url}"
                     
                     image_response = requests.get(full_image_url)
 
                     if image_response.status_code == 200:
                         image = Image.open(io.BytesIO(image_response.content))
                         st.success("✅ Image generated successfully!")
-                        st.image(image, caption="AI-Generated Image", use_container_width =True)
+                        st.image(image, caption="XploreAI-Generated Image", use_container_width =True)
                         image_bytes = io.BytesIO()
                         image.save(image_bytes, format="PNG")
                         image_bytes.seek(0)

@@ -1,7 +1,7 @@
 import streamlit as st
 import extra_streamlit_components as stx
 import requests
-from config import API_BASE_URL
+from config import API_BASE_URL_BACKEND
 
 # Config page
 st.set_page_config(
@@ -58,7 +58,7 @@ def logout():
     """Logout with API and clear session, cookie."""
     try:
         response = requests.post(
-            f"{API_BASE_URL}/logout/",
+            f"{API_BASE_URL_BACKEND}/logout/",
             json={"refresh": st.session_state.auth["refresh_token"]},
             headers={"Authorization": f"Bearer {st.session_state.auth['access_token']}"}
         )
@@ -104,7 +104,9 @@ if st.session_state.auth["logged_in"]:
     pg = st.navigation(
         {
             "Dashboard": [home_page],
-            "Service": [translation_page, generate_image_page, generate_text_page, summarization_page, vqa_page],
+            "Service": [translation_page, generate_image_page, 
+                        generate_text_page, summarization_page, 
+                        vqa_page],
             "Account": [profile_page, change_password_page],
         }
     )

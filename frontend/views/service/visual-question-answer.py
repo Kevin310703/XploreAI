@@ -1,15 +1,10 @@
 import streamlit as st
 import requests
-import os
-from dotenv import load_dotenv
 from PIL import Image
+from config import API_BASE_URL_CONTAINER
 
-load_dotenv()
-API_URL = os.getenv("VQA_API")
-
-if not API_URL:
-    st.error("❌ Error: VQA API URL is not configured in the .env file.")
-    st.stop()
+if not API_BASE_URL_CONTAINER:
+    raise ValueError("🚨 API base url is not set in the environment variables!")
 
 st.title("🖼️ Visual Question Answering (VQA)")
 
@@ -26,7 +21,7 @@ if uploaded_file and question:
             data = {"question": question}
             
             try:
-                response = requests.post(API_URL, files=files, data=data, timeout=30)
+                response = requests.post(f"{API_BASE_URL_CONTAINER}/vqa", files=files, data=data, timeout=30)
 
                 if response.status_code == 200:
                     answer = response.json().get("answer", "No answer received.")
