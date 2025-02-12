@@ -1,21 +1,26 @@
-import os
-from django.shortcuts import render
-
 # Create your views here.
+import os
+import traceback
+from rest_framework.exceptions import ValidationError
 from rest_framework import generics, permissions, status
-from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .serializers import ForgotPasswordSerializer, UserAvatarSerializer, UserProfileSerializer, UserSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+
+from .utils.email_sender import EmailSender
+from .serializers import (CustomTokenObtainPairSerializer, ForgotPasswordSerializer, 
+                          UserAvatarSerializer, UserProfileSerializer, UserSerializer)
 
 from .utils.helper import validate_avatar
 
 User = get_user_model()
+email_sender = EmailSender()
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -23,12 +28,18 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
-        user = serializer.save()
-        user.set_password(self.request.data["password"])
-        user.save()
+        try:
+            user = serializer.save()
+            user.set_password(self.request.data["password"])
+            user.save()
 
+        except Exception as e:
+            print(traceback.format_exc())
+            raise ValidationError(f"⚠️ Internal Server Error: {str(e)}")
+    
 class CustomTokenObtainPairView(TokenObtainPairView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(["POST"])
 def logout_view(request):
@@ -42,6 +53,18 @@ def logout_view(request):
         return Response({"message": "Logged out successfully."}, status=200)
     except Exception as e:
         return Response({"error": f"Invalid token: {str(e)}"}, status=400)
+
+@api_view(["GET"])
+def verify_email(request, token):
+    """API xác thực email"""
+    user = get_object_or_404(User, email_verification_token=token)
+
+    if user.is_email_verified:
+        return Response({"message": "Email is already verified."}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.is_email_verified = True
+    user.save()
+    return Response({"message": "✅ Email verified successfully!"}, status=status.HTTP_200_OK)
 
 class ForgotPasswordView(generics.GenericAPIView):
     serializer_class = ForgotPasswordSerializer

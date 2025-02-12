@@ -36,6 +36,14 @@ def switch_page(page_name):
     st.session_state.current_page = page_name
     st.rerun()
 
+# Check if verification token is in the URL
+query_params = st.query_params
+token = query_params.get("token", None)
+
+if token:
+    st.session_state["verification_token"] = token
+    st.session_state["current_page"] = "verify_email"
+
 if st.session_state.current_page == "login":
     st.subheader("🔑 Login")
     st.write("Welcome back! Please enter your credentials to continue. 🚀")
@@ -56,7 +64,13 @@ if st.session_state.current_page == "login":
                 "username": username,
                 "password": password
             })
-            if response.status_code == 200:
+
+            if response.status_code == 403:
+                st.error("⚠️ Your email has not been verified! Please check your inbox.")
+            elif response.status_code == 400:
+                error_message = response.json()
+                st.error(f"❌ {error_message}")
+            elif response.status_code == 200:
                 data = response.json()
                 set_auth_cookies(username, data["access"], data["refresh"])
                 st.success(f"🎉 Welcome {username}! You have successfully logged in.")
@@ -129,7 +143,7 @@ elif st.session_state.current_page == "register":
             })
 
             if response.status_code == 201:
-                st.success("✅ Registration successful! Please log in.")
+                st.success("✅ Registration successful! Please check your email to verify your account before logging in.")
                 time.sleep(2)
                 switch_page("login")
             elif response.status_code == 400:
@@ -150,6 +164,33 @@ elif st.session_state.current_page == "register":
             )
             if st.button("👉 Sign in with Google"):
                 webbrowser.open(google_url)
+
+elif st.session_state.current_page == "verify_email":
+    st.subheader("📩 Email Verification")
+    
+    # Lấy token từ session state
+    token = st.session_state.get("verification_token", None)
+
+    if token and "email_verified" not in st.session_state:
+        with st.spinner("🔄 Verifying your email..."):
+            response = requests.get(f"{API_BASE_URL_BACKEND}/verify-email/{token}")
+
+            if response.status_code == 200:
+                del st.session_state["verification_token"]
+                st.success("✅ Your email has been verified successfully! You can now log in.")
+                st.session_state["email_verified"] = True  
+            elif response.status_code == 400:
+                del st.session_state["verification_token"]
+                st.warning("⚠️ Your email is already verified. Please log in.")
+                st.session_state["email_verified"] = True
+            else:
+                st.error("❌ Verification failed. Invalid or expired token.")
+        
+        time.sleep(5)
+        
+    st.query_params.clear()
+    if st.button("🔙 Back to Login"):
+        switch_page("login")
 
 elif st.session_state.current_page == "forgot_password":
     st.subheader("🔑 Forgot Password?")

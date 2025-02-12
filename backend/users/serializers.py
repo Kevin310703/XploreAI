@@ -1,8 +1,12 @@
+import os
+import uuid
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .utils.email_sender import EmailSender
 
 User = get_user_model()
+email_sender = EmailSender()
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8, required=True)
@@ -19,10 +23,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """ Created user with hash password and role = 'user' """
+        validated_data["email_verification_token"] = uuid.uuid4()
         password = validated_data.pop("password")
         user = User(**validated_data, role="user")
         user.set_password(password)
         user.save()
+
+        verification_link = f"{os.getenv('FRONTEND_URL')}/?token={user.email_verification_token}/"
+        email_sender.send_verification_email(user.email, verification_link)
+        
         return user
 
 class UserAvatarSerializer(serializers.ModelSerializer):
@@ -45,15 +54,27 @@ class ForgotPasswordSerializer(serializers.Serializer):
         user = User.objects.get(email=email)
 
         # New password
-        new_password = EmailSender.generate_password()
+        new_password = email_sender.generate_password()
         user.set_password(new_password)
         user.save()
 
         # Send to user
-        success, message = EmailSender.send_reset_email(email, new_password)
+        success, message = email_sender.send_reset_email(email, new_password)
         return success, message
     
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'avatar']
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Kiểm tra xác thực email trước khi cấp token"""
+    
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+
+        if not user.is_email_verified:
+            raise serializers.ValidationError("⚠️ Your email has not been verified! Please check your inbox.")
+
+        return data
