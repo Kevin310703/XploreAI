@@ -1,9 +1,9 @@
 import streamlit as st
-import os
 import webbrowser
 import time
 import requests
 from datetime import datetime, timedelta
+
 from utils.validator import Validator
 from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, API_BASE_URL_BACKEND
 
@@ -38,11 +38,19 @@ def switch_page(page_name):
 
 # Check if verification token is in the URL
 query_params = st.query_params
-token = query_params.get("token", None)
 
+# Token param for verification email
+token = query_params.get("token", None)
 if token:
     st.session_state["verification_token"] = token
     st.session_state["current_page"] = "verify_email"
+
+# Code param for login with Google OAuth 2.0
+auth_code = query_params.get("code", None)
+
+if auth_code and "google_auth_code" not in st.session_state:
+    st.session_state["google_auth_code"] = auth_code
+    switch_page("google_login")
 
 if st.session_state.current_page == "login":
     st.subheader("🔑 Login")
@@ -88,6 +96,42 @@ if st.session_state.current_page == "login":
     with col2:
         if st.button("👉 Forgot Password"):
             switch_page("forgot_password")
+
+if st.session_state.current_page == "google_login" and not st.session_state.get("google_logged_in", False):
+    st.subheader("🔄 Processing Google Login...")
+
+    if "google_login_requested" not in st.session_state:
+        st.session_state["google_login_requested"] = True
+        st.rerun()
+
+    response = requests.post(f"{API_BASE_URL_BACKEND}/google-login/", 
+                             json={"code": st.session_state["google_auth_code"]})
+
+    if response.status_code == 200:
+        user_data = response.json()
+
+        if "access_token" in user_data and "refresh_token" in user_data:
+            st.success("✅ Logged in successfully!")
+            time.sleep(5)
+
+            # Save token into session
+            set_auth_cookies(user_data["username"], user_data["access_token"], user_data["refresh_token"])
+            st.session_state["logged_in"] = True
+            st.session_state["google_logged_in"] = True  # Flag processed status
+
+            st.query_params.clear()
+            del st.session_state["google_auth_code"]
+            del st.session_state["google_login_requested"]
+
+            st.rerun()
+            st.stop()
+    else:
+        st.error("❌ Google Login Failed")
+        del st.session_state["google_auth_code"]
+        del st.session_state["google_login_requested"]
+        time.sleep(2)
+        switch_page("login")
+        st.stop()  # Ngăn không cho script tiếp tục chạy
 
 elif st.session_state.current_page == "register":
     st.subheader("📝 Register User")
@@ -187,7 +231,7 @@ elif st.session_state.current_page == "verify_email":
                 st.error("❌ Verification failed. Invalid or expired token.")
         
         time.sleep(5)
-        
+
     st.query_params.clear()
     if st.button("🔙 Back to Login"):
         switch_page("login")

@@ -1,23 +1,25 @@
 # Create your views here.
-import os
 import traceback
+import requests
 from rest_framework.exceptions import ValidationError
 from rest_framework import generics, permissions, status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
+from .models import CustomUser
+
+from .utils.helper import validate_avatar
 from .utils.email_sender import EmailSender
 from .serializers import (CustomTokenObtainPairSerializer, ForgotPasswordSerializer, 
                           UserAvatarSerializer, UserProfileSerializer, UserSerializer)
-
-from .utils.helper import validate_avatar
 
 User = get_user_model()
 email_sender = EmailSender()
@@ -42,20 +44,29 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
     refresh_token = request.data.get("refresh")
+
     if not refresh_token:
-        return Response({"error": "Refresh token is missing"}, status=400)
-    
+        return Response({"error": "Refresh token is missing"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         token = RefreshToken(refresh_token)
-        token.blacklist()  # Đánh dấu token là đã hết hạn
-        return Response({"message": "Logged out successfully."}, status=200)
+        token.blacklist()  # Đưa token vào blacklist
+
+        # Xóa refresh token trong database
+        user = request.user
+        if user.refresh_token:
+            user.refresh_token = None
+            user.save()
+
+        return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"error": f"Invalid token: {str(e)}"}, status=400)
+        return Response({"error": f"Invalid token: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
-def verify_email(request, token):
+def verify_email(token):
     """API xác thực email"""
     user = get_object_or_404(User, email_verification_token=token)
 
@@ -65,6 +76,65 @@ def verify_email(request, token):
     user.is_email_verified = True
     user.save()
     return Response({"message": "✅ Email verified successfully!"}, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def google_login(request):
+    auth_code = request.data.get("code")
+
+    if not auth_code:
+        return Response({"error": "No authorization code provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Exchange auth code for access token
+    token_url = "https://oauth2.googleapis.com/token"
+    data = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "code": auth_code,
+        "grant_type": "authorization_code",
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+    }
+
+    token_response = requests.post(token_url, data=data)
+    token_json = token_response.json()
+
+    if "access_token" not in token_json:
+        return Response({"error": "Failed to get access token"}, status=status.HTTP_400_BAD_REQUEST)
+
+    access_token = token_json["access_token"]
+
+    # Get user info from Google API
+    user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+    user_info_response = requests.get(user_info_url, headers={"Authorization": f"Bearer {access_token}"})
+    user_info = user_info_response.json()
+
+    email = user_info.get("email")
+    google_name = user_info.get("name", "")
+
+    if not email:
+        return Response({"error": "Failed to get user email"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check user existss
+    user, created = CustomUser.objects.get_or_create(email=email)
+
+    # If user existed, update refresh token
+    if not created:
+        user.refresh_token = str(RefreshToken.for_user(user))
+    else:
+        user.username = email.split("@")[0]
+        user.google_name = google_name
+        user.refresh_token = str(RefreshToken.for_user(user))
+        email_sender.send_welcome_email(email, google_name) # Send welcome email
+
+    user.save()
+    return Response({
+        "message": "Login successful",
+        "user_id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "name": user.google_name,
+        "access_token": str(RefreshToken.for_user(user).access_token),
+        "refresh_token": user.refresh_token
+    })
 
 class ForgotPasswordView(generics.GenericAPIView):
     serializer_class = ForgotPasswordSerializer

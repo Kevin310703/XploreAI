@@ -15,6 +15,7 @@ class EmailSender:
         self.smtp_server = os.getenv("EMAIL_HOST")
         self.smtp_port = int(os.getenv("EMAIL_PORT"))
         self.horizontal_logo = os.getenv("HORIZONTAL_LOGO_GITHUB_WEB")
+        self.url_frontend = os.getenv("FRONTEND_URL")
 
     @staticmethod
     def generate_password():
@@ -82,4 +83,29 @@ class EmailSender:
         </html>
         """
 
+        return self.send_email(to_email, subject, body)
+
+    def send_welcome_email(self, to_email, user_name):
+        subject = "🎉 Welcome to XploreAI!"
+        body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; text-align: center;">
+            <div style="max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; 
+                        box-shadow: 0px 4px 8px rgba(0,0,0,0.1);">
+                <img src="{self.horizontal_logo}" alt="XploreAI Logo" style="max-width: 150px; margin-bottom: 20px;">
+                <h2 style="color: #333;">👋 Hello, {user_name}!</h2>
+                <p style="color: #555;">Welcome to <strong>XploreAI</strong>! 🚀 We're thrilled to have you here.</p>
+                <p style="color: #555;">Get started by exploring our AI-powered services and unlock endless possibilities.</p>
+                <a href="{self.url_frontend}" style="display: inline-block; padding: 12px 24px; font-size: 16px; 
+                            font-weight: bold; color: white; background-color: #008CBA; border-radius: 5px; 
+                            text-decoration: none; margin-top: 15px;">
+                    Explore Now
+                </a>
+                <p style="color: #888; margin-top: 20px;">If you have any questions, feel free to reach out to us.</p>
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                <p style="color: #777; font-size: 12px;">© 2024 XploreAI. All rights reserved.</p>
+            </div>
+        </body>
+        </html>
+        """
         return self.send_email(to_email, subject, body)

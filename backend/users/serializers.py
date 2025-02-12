@@ -18,8 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", 
-                  "first_name", "last_name", "password", 
-                  "role", "avatar"]
+                  "first_name", "last_name", "google_name", 
+                  "password", "role", "avatar"]
 
     def create(self, validated_data):
         """ Created user with hash password and role = 'user' """

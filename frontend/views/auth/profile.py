@@ -1,6 +1,8 @@
-import time
 import streamlit as st
+import time
 import requests
+from datetime import datetime, timedelta
+
 from config import API_BASE_URL_BACKEND
 from utils.validator import Validator
 
@@ -121,6 +123,8 @@ if response.status_code == 200:
             if update_response.status_code == 200:
                 st.success("✅ Profile updated successfully!")
                 st.session_state.auth["username"] = new_username
+                cookie_manager.set("username", new_username, key="username_set", 
+                                   expires_at=datetime.utcnow() + timedelta(days=7))
                 time.sleep(4)
                 st.rerun()
             else:
