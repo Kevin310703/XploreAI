@@ -9,7 +9,25 @@ from config import API_BASE_URL_BACKEND
 st.set_page_config(
     page_title="XploreAI",
     page_icon=":rocket:",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="auto",
+    menu_items={
+        'About': """
+        # 🚀 Welcome to XploreAI!
+        
+        **XploreAI** is your ultimate AI-powered companion, designed to unlock the full potential of artificial intelligence for your needs.  
+        
+        🧠 **Key Features**:
+        - 🌍 AI-driven language translation and text summarization  
+        - 🎨 AI-generated images with cutting-edge diffusion models  
+        - 🤖 Smart chatbot that understands natural conversations  
+        - 📊 Data processing and visualization for insightful analytics  
+
+        Whether you're an AI enthusiast, researcher, or developer, **XploreAI** empowers you with state-of-the-art machine learning tools at your fingertips.  
+
+        🔗 *Stay curious. Explore more. Innovate with AI!*  
+        """
+    }
 )
 
 # Logo app
