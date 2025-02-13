@@ -1,8 +1,8 @@
 import streamlit as st
 import requests
-from config import API_BASE_URL_CONTAINER
+from config import API_BASE_URL_BACKEND_SERVICE
 
-if not API_BASE_URL_CONTAINER:
+if not API_BASE_URL_BACKEND_SERVICE:
     raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
@@ -34,7 +34,7 @@ if st.button("Translate Now 🏆"):
             language_pair = "en-vi" if translation_direction == "English → Vietnamese" else "vi-en"
 
             payload = {"text": input_text}
-            response = requests.post(f"{API_BASE_URL_CONTAINER}/translate", json=payload)
+            response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/translate", json=payload)
 
             if response.status_code == 200:
                 translated_text = response.json().get("translated_text", "Unknown error")

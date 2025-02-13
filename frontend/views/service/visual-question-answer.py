@@ -1,15 +1,15 @@
 import streamlit as st
 import requests
 from PIL import Image
-from config import API_BASE_URL_CONTAINER
+from config import API_BASE_URL_BACKEND_SERVICE
 
-if not API_BASE_URL_CONTAINER:
+if not API_BASE_URL_BACKEND_SERVICE:
     raise ValueError("🚨 API base url is not set in the environment variables!")
 
 st.title("🖼️ Visual Question Answering (VQA)")
 
 uploaded_file = st.file_uploader("📤 Upload an image:", type=["png", "jpg", "jpeg"])
-question = st.text_input("❓ Ask a question about the image:")
+question = st.text_input("❓ Ask a question about the image:", placeholder="Enter your question")
 
 if uploaded_file and question:
     image = Image.open(uploaded_file)
@@ -21,7 +21,7 @@ if uploaded_file and question:
             data = {"question": question}
             
             try:
-                response = requests.post(f"{API_BASE_URL_CONTAINER}/vqa", files=files, data=data, timeout=30)
+                response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/vqa", files=files, data=data, timeout=30)
 
                 if response.status_code == 200:
                     answer = response.json().get("answer", "No answer received.")

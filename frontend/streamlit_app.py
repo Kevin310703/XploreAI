@@ -3,7 +3,7 @@ import time
 import extra_streamlit_components as stx
 import requests
 from datetime import datetime, timedelta
-from config import API_BASE_URL_BACKEND
+from config import API_BASE_URL_BACKEND_USER
 
 # Config page
 st.set_page_config(
@@ -87,12 +87,11 @@ def clear_auth():
     time.sleep(1)  # Chờ một chút để đảm bảo cookie thực sự được xóa
     st.rerun()
 
-
 def logout():
     """Logout with API and clear session, cookie."""
     try:
         response = requests.post(
-            f"{API_BASE_URL_BACKEND}/logout/",
+            f"{API_BASE_URL_BACKEND_USER}/logout/",
             json={"refresh": st.session_state.auth["refresh_token"]},
             headers={"Authorization": f"Bearer {st.session_state.auth['access_token']}"}
         )

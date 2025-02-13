@@ -3,10 +3,10 @@ import time
 import requests
 from datetime import datetime, timedelta
 
-from config import API_BASE_URL_BACKEND
+from config import API_BASE_URL_BACKEND_USER
 from utils.validator import Validator
 
-if not API_BASE_URL_BACKEND:
+if not API_BASE_URL_BACKEND_USER:
     raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 if "cookie_manager" not in st.session_state:
@@ -36,7 +36,7 @@ if not access_token:
     st.stop()
 
 headers = {"Authorization": f"Bearer {access_token}"}
-response = requests.get(f"{API_BASE_URL_BACKEND}/profile/", headers=headers)
+response = requests.get(f"{API_BASE_URL_BACKEND_USER}/profile/", headers=headers)
 
 if response.status_code == 200:
     user_info = response.json()
@@ -73,7 +73,7 @@ if response.status_code == 200:
     if uploaded_file is not None:
         if st.button("Upload Avatar"):
             files = {"avatar": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
-            response = requests.put(f"{API_BASE_URL_BACKEND}/profile/avatar/", headers=headers, files=files)
+            response = requests.put(f"{API_BASE_URL_BACKEND_USER}/profile/avatar/", headers=headers, files=files)
 
             if response.status_code == 200:
                 st.success("✅ Avatar updated successfully!")
@@ -111,7 +111,7 @@ if response.status_code == 200:
                 st.error(error)
         else:
             update_response = requests.put(
-                f"{API_BASE_URL_BACKEND}/profile/",
+                f"{API_BASE_URL_BACKEND_USER}/profile/",
                 headers=headers,
                 json={
                     "first_name": new_first_name,

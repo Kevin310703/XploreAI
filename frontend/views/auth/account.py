@@ -5,9 +5,9 @@ import requests
 from datetime import datetime, timedelta
 
 from utils.validator import Validator
-from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, API_BASE_URL_BACKEND
+from config import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI, API_BASE_URL_BACKEND_USER
 
-if not API_BASE_URL_BACKEND:
+if not API_BASE_URL_BACKEND_USER:
     raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 st.title("🌟 Welcome to XploreAI!")
@@ -68,7 +68,7 @@ if st.session_state.current_page == "login":
         elif not password.strip():
             st.warning("⚠️ Please enter your password!")
         else:
-            response = requests.post(f"{API_BASE_URL_BACKEND}/login/", json={
+            response = requests.post(f"{API_BASE_URL_BACKEND_USER}/login/", json={
                 "username": username,
                 "password": password
             })
@@ -104,7 +104,7 @@ if st.session_state.current_page == "google_login" and not st.session_state.get(
         st.session_state["google_login_requested"] = True
         st.rerun()
 
-    response = requests.post(f"{API_BASE_URL_BACKEND}/google-login/", 
+    response = requests.post(f"{API_BASE_URL_BACKEND_USER}/google-login/", 
                              json={"code": st.session_state["google_auth_code"]})
 
     if response.status_code == 200:
@@ -178,7 +178,7 @@ elif st.session_state.current_page == "register":
             for error in errors:
                 st.warning(error)
         else:
-            response = requests.post(f"{API_BASE_URL_BACKEND}/register/", json={
+            response = requests.post(f"{API_BASE_URL_BACKEND_USER}/register/", json={
                 "username": username,
                 "email": email,
                 "password": new_password,
@@ -217,7 +217,7 @@ elif st.session_state.current_page == "verify_email":
 
     if token and "email_verified" not in st.session_state:
         with st.spinner("🔄 Verifying your email..."):
-            response = requests.get(f"{API_BASE_URL_BACKEND}/verify-email/{token}")
+            response = requests.get(f"{API_BASE_URL_BACKEND_USER}/verify-email/{token}")
 
             if response.status_code == 200:
                 del st.session_state["verification_token"]
@@ -248,7 +248,7 @@ elif st.session_state.current_page == "forgot_password":
             st.error("❌ Invalid email format!")
         else:
             try:
-                response = requests.post(f"{API_BASE_URL_BACKEND}/forgot-password/", json={"email": recovery_email})
+                response = requests.post(f"{API_BASE_URL_BACKEND_USER}/forgot-password/", json={"email": recovery_email})
                 if response.status_code == 200:
                     st.success("✅ A new password has been sent to your email.")
                     time.sleep(2)

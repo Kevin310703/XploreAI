@@ -2,9 +2,9 @@ import streamlit as st
 import requests
 import io
 from PIL import Image
-from config import API_BASE_URL_CONTAINER
+from config import API_BASE_URL_BACKEND_SERVICE
 
-if not API_BASE_URL_CONTAINER:
+if not API_BASE_URL_BACKEND_SERVICE:
     raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
@@ -16,13 +16,13 @@ if st.button("Generate Image 🚀"):
     with st.spinner("⏳ Processing..."):
         if prompt.strip():
             payload = {"prompt": prompt}
-            response = requests.post(f"{API_BASE_URL_CONTAINER}/generate-image", json=payload)
+            response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/generate-image", json=payload)
 
             if response.status_code == 200:
                 image_url = response.json().get("image_url", None)
 
                 if image_url:
-                    full_image_url = f"{API_BASE_URL_CONTAINER}{image_url}"
+                    full_image_url = f"{API_BASE_URL_BACKEND_SERVICE}{image_url}"
                     
                     image_response = requests.get(full_image_url)
 

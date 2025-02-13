@@ -1,14 +1,14 @@
 import streamlit as st
 import requests
-from config import API_BASE_URL_CONTAINER
+from config import API_BASE_URL_BACKEND_SERVICE
 
-if not API_BASE_URL_CONTAINER:
+if not API_BASE_URL_BACKEND_SERVICE:
     raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
 st.title("📖 Text Summarization")
 
-input_text = st.text_area("📝 Enter the text to summarize:", height=250)
+input_text = st.text_area("📝 Enter the text to summarize:", height=250, placeholder="Type or paste your text here...")
 
 if st.button("Summarize 📌"):
     with st.spinner("⏳ Processing..."):
@@ -16,7 +16,7 @@ if st.button("Summarize 📌"):
             payload = {"text": input_text}
             
             try:
-                response = requests.post(f"{API_BASE_URL_CONTAINER}/summarize", json=payload, timeout=120)
+                response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/summarize", json=payload, timeout=120)
 
                 if response.status_code == 200:
                     summary = response.json().get("summary", "Unknown error")

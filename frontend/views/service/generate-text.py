@@ -1,8 +1,8 @@
 import streamlit as st
 import requests
-from config import API_BASE_URL_CONTAINER
+from config import API_BASE_URL_BACKEND_SERVICE
 
-if not API_BASE_URL_CONTAINER:
+if not API_BASE_URL_BACKEND_SERVICE:
     raise ValueError("🚨 API base url is not set in the environment variables!")
 
 # Component of page
@@ -16,7 +16,7 @@ if st.button("Generate Text 🚀"):
             payload = {"text": input_text}
 
             try:
-                response = requests.post(f"{API_BASE_URL_CONTAINER}/generate-text", json=payload, timeout=60)
+                response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/generate-text", json=payload, timeout=60)
 
                 if response.status_code == 200:
                     generated_text = response.json().get("generated_text", "")

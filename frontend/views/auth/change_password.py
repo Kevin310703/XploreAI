@@ -3,9 +3,9 @@ import streamlit as st
 import os
 import requests
 from utils.validator import Validator
-from config import API_BASE_URL_BACKEND
+from config import API_BASE_URL_BACKEND_USER
 
-if not API_BASE_URL_BACKEND:
+if not API_BASE_URL_BACKEND_USER:
     raise ValueError("🚨 API_BASE_URL is not set in the environment variables!")
 
 st.title("🔑 Change Password")
@@ -49,7 +49,7 @@ if st.button("✅ Change Password"):
             st.error(f"⚠ {message}")  # Show validation error
         else:
             headers = {"Authorization": f"Bearer {st.session_state.access_token}"}
-            response = requests.post(f"{API_BASE_URL_BACKEND}/change-password/", headers=headers, json={
+            response = requests.post(f"{API_BASE_URL_BACKEND_USER}/change-password/", headers=headers, json={
                 "old_password": old_password,
                 "new_password": new_password
             })
