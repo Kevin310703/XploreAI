@@ -1,6 +1,6 @@
+from datetime import datetime, timedelta
 import time
 import streamlit as st
-import os
 import requests
 from utils.validator import Validator
 from config import API_BASE_URL_BACKEND_USER
@@ -22,11 +22,57 @@ if "auth" not in st.session_state:
         "refresh_token": None
     }
 
+def clear_auth():
+    """Delete information from session and cookie."""
+    st.session_state.auth = {
+        "logged_in": False,
+        "username": None,
+        "access_token": None,
+        "refresh_token": None
+    }
+
+    cookie_manager = st.session_state.cookie_manager
+    cookie_manager.set("access_token", "", key="access_token_set", expires_at=datetime.utcnow() - timedelta(days=1))
+    cookie_manager.set("refresh_token", "", key="refresh_token_set", expires_at=datetime.utcnow() - timedelta(days=1))
+    cookie_manager.set("username", "", key="username_set", expires_at=datetime.utcnow() - timedelta(days=1))
+
+    # Xóa dữ liệu session state
+    if "cookies_loaded" in st.session_state:
+        del st.session_state["cookies_loaded"]
+
+    time.sleep(1)  # Chờ một chút để đảm bảo cookie thực sự được xóa
+    st.rerun()
+
+def logout():
+    """Logout with API and clear session, cookie."""
+    try:
+        response = requests.post(
+            f"{API_BASE_URL_BACKEND_USER}/logout/",
+            json={"refresh": st.session_state.auth["refresh_token"]},
+            headers={"Authorization": f"Bearer {st.session_state.auth['access_token']}"}
+        )
+
+        if response.status_code == 200:
+            st.success("✅ Logged out successfully.")
+
+            clear_auth()
+            time.sleep(2)
+            st.rerun()
+        else:
+            st.error("❌ Logout failed! Please try again.")
+    except Exception as e:
+        st.error(f"Logout failed: {str(e)}")
+        
 # Get cookie_manager from session state
 cookie_manager = st.session_state.cookie_manager
 
 if not st.session_state.auth.get("logged_in"):
     st.warning("⚠️ You need to log in to change your password.")
+    st.stop()
+
+access_token = st.session_state.auth.get("access_token")
+if not access_token:
+    st.error("❌ Access token not found!")
     st.stop()
 
 st.write(f"👤 Logged in as **{st.session_state.auth["username"]}**")
@@ -48,7 +94,7 @@ if st.button("✅ Change Password"):
         if not is_valid:
             st.error(f"⚠ {message}")  # Show validation error
         else:
-            headers = {"Authorization": f"Bearer {st.session_state.access_token}"}
+            headers = {"Authorization": f"Bearer {access_token}"}
             response = requests.post(f"{API_BASE_URL_BACKEND_USER}/change-password/", headers=headers, json={
                 "old_password": old_password,
                 "new_password": new_password
@@ -60,6 +106,7 @@ if st.button("✅ Change Password"):
                 st.session_state.logged_in = False
                 st.session_state.username = None
                 st.session_state.access_token = None
+                logout()
                 st.rerun()
             else:
                 st.error(f"⚠ {response.json().get('error', 'Password change failed!')}")
