@@ -21,8 +21,6 @@ if "auth" not in st.session_state:
         "refresh_token": None
     }
 
-st.title("👤 User Profile")
-
 # Get cookie_manager from session state
 cookie_manager = st.session_state.cookie_manager
 
@@ -34,6 +32,8 @@ access_token = st.session_state.auth.get("access_token")
 if not access_token:
     st.error("❌ Access token not found!")
     st.stop()
+
+st.title("👤 User Profile")
 
 headers = {"Authorization": f"Bearer {access_token}"}
 response = requests.get(f"{API_BASE_URL_BACKEND_USER}/profile/", headers=headers)
@@ -84,52 +84,55 @@ if response.status_code == 200:
 
     # Upload information
     st.markdown("---")
-    st.subheader("✏ Edit Profile")
+    with st.form("edit_profile_form", enter_to_submit =True, border=False):
+        st.subheader("✏ Edit Profile")
 
-    new_first_name = st.text_input("First Name", value=user_info.get('first_name', ''))
-    new_last_name = st.text_input("Last Name", value=user_info.get('last_name', ''))
-    new_username = st.text_input("Username", value=user_info.get('username', ''))
-    new_email = st.text_input("Email", value=user_info.get('email', ''))
+        new_first_name = st.text_input("First Name", value=user_info.get('first_name', ''))
+        new_last_name = st.text_input("Last Name", value=user_info.get('last_name', ''))
+        new_username = st.text_input("Username", value=user_info.get('username', ''))
+        new_email = st.text_input("Email", value=user_info.get('email', ''))
 
-    if st.button("💾 Save Changes"):
-        errors = []
+        submitted = st.form_submit_button("💾 Save Changes")
+        if submitted:
+            errors = []
 
-        if not Validator.is_valid_name(new_first_name):
-            errors.append("❌ First Name is invalid. Only letters and spaces (2-30 characters) are allowed.")
-        
-        if not Validator.is_valid_name(new_last_name):
-            errors.append("❌ Last Name is invalid. Only letters and spaces (2-30 characters) are allowed.")
-        
-        if not Validator.is_valid_username(new_username):
-            errors.append("❌ Username must be 150 characters or fewer. Only letters, numbers, and @/./+/-/_ are allowed.")
-        
-        if not Validator.is_valid_email(new_email):
-            errors.append("❌ Email format is invalid.")
+            if not Validator.is_valid_name(new_first_name):
+                errors.append("❌ First Name is invalid. Only letters and spaces (2-30 characters) are allowed.")
+            
+            if not Validator.is_valid_name(new_last_name):
+                errors.append("❌ Last Name is invalid. Only letters and spaces (2-30 characters) are allowed.")
+            
+            if not Validator.is_valid_username(new_username):
+                errors.append("❌ Username must be 150 characters or fewer. Only letters, numbers, and @/./+/-/_ are allowed.")
+            
+            if not Validator.is_valid_email(new_email):
+                errors.append("❌ Email format is invalid.")
 
-        if errors:
-            for error in errors:
-                st.error(error)
-        else:
-            update_response = requests.put(
-                f"{API_BASE_URL_BACKEND_USER}/profile/",
-                headers=headers,
-                json={
-                    "first_name": new_first_name,
-                    "last_name": new_last_name,
-                    "username": new_username,
-                    "email": new_email
-                }
-            )
-            if update_response.status_code == 200:
-                st.success("✅ Profile updated successfully!")
-                st.session_state.auth["username"] = new_username
-                cookie_manager.set("username", new_username, key="username_set", 
-                                   expires_at=datetime.utcnow() + timedelta(days=7))
-                time.sleep(4)
-                st.rerun()
+            if errors:
+                for error in errors:
+                    st.error(error)
             else:
-                st.error("⚠️ Unable to update profile. Please try again later.")
+                update_response = requests.put(
+                    f"{API_BASE_URL_BACKEND_USER}/profile/",
+                    headers=headers,
+                    json={
+                        "first_name": new_first_name,
+                        "last_name": new_last_name,
+                        "username": new_username,
+                        "email": new_email
+                    }
+                )
+                if update_response.status_code == 200:
+                    st.success("✅ Profile updated successfully!")
+                    st.session_state.auth["username"] = new_username
+                    cookie_manager.set("username", new_username, key="username_set", 
+                                    expires_at=datetime.utcnow() + timedelta(days=7))
+                    time.sleep(4)
+                    st.rerun()
+                else:
+                    st.error("⚠️ Unable to update profile. Please try again later.")
 
     st.markdown("---")
+    st.markdown("🚀 **© 2025 X-OR AI GENERATIVE**")
 else:
     st.error("❌ Unable to load profile information.")

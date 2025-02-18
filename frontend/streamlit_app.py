@@ -1,9 +1,6 @@
 import streamlit as st
 import time
-import extra_streamlit_components as stx
-import requests
-from datetime import datetime, timedelta
-from config import API_BASE_URL_BACKEND_USER
+from session_manager import init_session, load_auth_from_cookies, logout
 
 # Config page
 st.set_page_config(
@@ -35,83 +32,11 @@ HORIZONTAL_LOGO = "assets/image/horizontal_logo.png"
 ICON_LOGO = "assets/image/icon_logo.png"
 st.logo(HORIZONTAL_LOGO, icon_image=ICON_LOGO)
 
-def init_session():
-    """Initial session state if not exist."""
-    if "cookie_manager" not in st.session_state:
-        st.session_state.cookie_manager = stx.CookieManager()
-    if "auth" not in st.session_state:
-        st.session_state.auth = {
-            "logged_in": False,
-            "username": None,
-            "access_token": None,
-            "refresh_token": None
-        }
-    load_auth_from_cookies()
-
-def load_auth_from_cookies():
-    """Update information from cookie to session state."""
-    if "cookies_loaded" in st.session_state:
-        return  # Tránh gọi lại nhiều lần gây lỗi
-
-    cookie_manager = st.session_state.cookie_manager
-    cookies = cookie_manager.get_all(key="load_auth")  # Đặt key duy nhất để tránh lỗi
-
-    if cookies.get("access_token") and cookies.get("username"):
-        st.session_state.auth = {
-            "logged_in": True,
-            "username": cookies.get("username"),
-            "access_token": cookies.get("access_token"),
-            "refresh_token": cookies.get("refresh_token")
-        }
-
-    st.session_state["cookies_loaded"] = True
-
-def clear_auth():
-    """Delete information from session and cookie."""
-    st.session_state.auth = {
-        "logged_in": False,
-        "username": None,
-        "access_token": None,
-        "refresh_token": None
-    }
-
-    cookie_manager = st.session_state.cookie_manager
-    cookie_manager.set("access_token", "", key="access_token_set", expires_at=datetime.utcnow() - timedelta(days=1))
-    cookie_manager.set("refresh_token", "", key="refresh_token_set", expires_at=datetime.utcnow() - timedelta(days=1))
-    cookie_manager.set("username", "", key="username_set", expires_at=datetime.utcnow() - timedelta(days=1))
-
-    # Xóa dữ liệu session state
-    if "cookies_loaded" in st.session_state:
-        del st.session_state["cookies_loaded"]
-
-    time.sleep(1)  # Chờ một chút để đảm bảo cookie thực sự được xóa
-    st.rerun()
-
-def logout():
-    """Logout with API and clear session, cookie."""
-    try:
-        response = requests.post(
-            f"{API_BASE_URL_BACKEND_USER}/logout/",
-            json={"refresh": st.session_state.auth["refresh_token"]},
-            headers={"Authorization": f"Bearer {st.session_state.auth['access_token']}"}
-        )
-
-        if response.status_code == 200:
-            st.success("✅ Logged out successfully.")
-
-            clear_auth()
-            time.sleep(2)
-            st.rerun()
-        else:
-            st.error("❌ Logout failed! Please try again.")
-    except Exception as e:
-        st.error(f"Logout failed: {str(e)}")
-
 init_session()
 cookie_manager = st.session_state.cookie_manager
 
 # Display in sidebar if logged in
-if "cookies_loaded" not in st.session_state:  # Đảm bảo chỉ load một lần
+if "cookies_loaded" not in st.session_state:
     load_auth_from_cookies()
 
 if st.session_state.auth["logged_in"]:
@@ -149,6 +74,7 @@ if st.session_state.auth["logged_in"]:
         }
     )
 else:
+    time.sleep(2)
     pg = st.navigation([login_page])
 
 pg.run()
