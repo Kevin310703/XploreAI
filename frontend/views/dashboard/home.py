@@ -6,12 +6,12 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# Get string base64 của ảnh banner
+# Get base64 string of the banner image
 banner_base64 = get_base64_of_bin_file("assets/image/xploreai_banner.jpg")
 
 html_content = f"""
 <style>
-/* Định dạng chung cho trang */
+/* General page styling */
 body {{
     background: #f0f2f6;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,7 +19,7 @@ body {{
     padding: 0;
 }}
 
-/* Header với gradient nền */
+/* Header with gradient background */
 .header {{
     text-align: center;
     padding: 60px 20px;
@@ -42,14 +42,14 @@ body {{
     margin-top: 10px;
 }}
 
-/* Banner ảnh */
+/* Banner image */
 .banner-img {{
     width: 100%;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }}
 
-/* Container các thẻ dịch vụ sử dụng CSS Grid với 2 cột cố định */
+/* Service cards using CSS Grid with 2 fixed columns */
 .service-cards {{
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -57,7 +57,7 @@ body {{
     margin: 2rem 0;
 }}
 
-/* Mỗi thẻ dịch vụ */
+/* Individual service card */
 .service-card {{
     background: white;
     border-radius: 15px;
@@ -80,7 +80,7 @@ body {{
     color: #555;
 }}
 
-/* Mô tả dự án */
+/* Project description */
 .description {{
     font-size: 1.2rem;
     line-height: 1.6;
@@ -90,7 +90,7 @@ body {{
     color: #444;
 }}
 
-/* Nút Bắt đầu */
+/* Start button */
 .start-button {{
     display: block;
     width: 220px;
@@ -113,41 +113,41 @@ body {{
 <!-- Header -->
 <div class="header">
     <div class="big-title">XploreAI</div>
-    <div class="sub-title">Ứng dụng AI đa dịch vụ: Dịch ngôn ngữ, Tạo hình ảnh, Tóm tắt văn bản</div>
+    <div class="sub-title">AI-powered services: Language Translation, Image Generation, Text Summarization</div>
 </div>
 
-<!-- Banner ảnh -->
-<img class="banner-img" src="data:image/jpeg;base64,{banner_base64}" alt="Banner XploreAI" />
+<!-- Banner image -->
+<img class="banner-img" src="data:image/jpeg;base64,{banner_base64}" alt="XploreAI Banner" />
 
-<!-- Các thẻ dịch vụ -->
-<h2 style="text-align: center; margin-top: 2rem;">Các Dịch Vụ của Chúng Tôi</h2>
+<!-- Service cards -->
+<h2 style="text-align: center; margin-top: 2rem;">Our Services</h2>
 <div class="service-cards">
     <div class="service-card">
-        <h3>Dịch Ngôn Ngữ</h3>
-        <p>Chuyển đổi văn bản nhanh chóng giữa các ngôn ngữ, giúp giao tiếp toàn cầu dễ dàng hơn.</p>
+        <h3>Language Translation</h3>
+        <p>Quickly convert text between multiple languages, making global communication effortless.</p>
     </div>
     <div class="service-card">
-        <h3>Tạo Hình Ảnh</h3>
-        <p>Sáng tạo hình ảnh độc đáo dựa trên ý tưởng của bạn thông qua công nghệ AI tiên tiến.</p>
+        <h3>Image Generation</h3>
+        <p>Create unique images based on your ideas using cutting-edge AI technology.</p>
     </div>
     <div class="service-card">
-        <h3>Tóm Tắt Văn Bản</h3>
-        <p>Rút gọn nội dung văn bản dài, giữ lại những thông tin cốt lõi quan trọng, tiết kiệm thời gian hiệu quả.</p>
+        <h3>Text Summarization</h3>
+        <p>Condense long texts while retaining key information, saving valuable time.</p>
     </div>
     <div class="service-card">
-        <h3>Trả Lời Câu Hỏi</h3>
-        <p>Giải đáp mọi thắc mắc của bạn với trí tuệ nhân tạo, hỗ trợ tìm kiếm thông tin nhanh chóng và chính xác.</p>
+        <h3>Question Answering</h3>
+        <p>Get instant answers to your queries using AI, providing accurate and fast information retrieval.</p>
     </div>
 </div>
 
-<!-- Mô tả dự án -->
+<!-- Project description -->
 <div class="description">
-    XploreAI là nền tảng tiên phong cung cấp các dịch vụ trí tuệ nhân tạo, giúp bạn tối ưu hóa quy trình làm việc và khám phá những sáng tạo mới. Hãy để AI hỗ trợ bạn giải quyết các thách thức trong thời đại số!
+    XploreAI is a pioneering platform offering AI-powered services to optimize workflows and foster creativity. Let AI assist you in tackling challenges in the digital era!
 </div>
 
-<!-- Nút "Bắt đầu ngay" -->
+<!-- "Get Started" Button -->
 <div style="text-align: center;">
-    <button class="start-button" onclick="window.location.reload()">Bắt đầu ngay</button>
+    <button class="start-button" onclick="window.location.reload()">Get Started Now</button>
 </div>
 """
 
