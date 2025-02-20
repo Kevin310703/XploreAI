@@ -61,15 +61,15 @@ generate_image_page = st.Page("views/service/generate-image.py", title="Generate
 summarization_page = st.Page("views/service/summarization-text.py", title="Summarization", icon=":material/short_text:")
 vqa_page = st.Page("views/service/visual-question-answer.py", title="Q&A", icon=":material/visibility:")
 generate_text_page = st.Page("views/service/generate-text.py", title="Generate Text", icon=":material/chat:")
+image_to_text_page = st.Page("views/service/image-read.py", title="Image Read", icon=":material/imagesmode:")
 
 # Navigation
 if st.session_state.auth["logged_in"]:
     pg = st.navigation(
         {
             "Dashboard": [home_page],
-            "Service": [translation_page, generate_image_page, 
-                        generate_text_page, summarization_page, 
-                        vqa_page],
+            "Text": [translation_page, generate_text_page, summarization_page],
+            "Image": [generate_image_page, vqa_page, image_to_text_page],
             "Account": [profile_page, change_password_page],
         }
     )

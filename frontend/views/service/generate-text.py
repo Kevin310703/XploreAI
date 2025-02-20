@@ -29,7 +29,7 @@ with st.form("text_generator_form", enter_to_submit =True, border=False):
                 payload = {"text": input_text}
 
                 try:
-                    response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/generate-text", json=payload, timeout=60)
+                    response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/generate-text/", json=payload, timeout=60)
 
                     if response.status_code == 200:
                         generated_text = response.json().get("generated_text", "")

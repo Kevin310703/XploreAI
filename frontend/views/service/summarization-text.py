@@ -29,7 +29,7 @@ with st.form("text_summarization_form", enter_to_submit =True, border=False):
                 payload = {"text": input_text}
                 
                 try:
-                    response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/summarize", json=payload, timeout=120)
+                    response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/summarize/", json=payload, timeout=120)
 
                     if response.status_code == 200:
                         summary = response.json().get("summary", "Unknown error")

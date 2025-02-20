@@ -36,7 +36,7 @@ with st.form("vqa_form", enter_to_submit =True, border=False):
             data = {"question": question}
             
             try:
-                response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/vqa", files=files, data=data, timeout=30)
+                response = requests.post(f"{API_BASE_URL_BACKEND_SERVICE}/vqa/", files=files, data=data, timeout=30)
 
                 if response.status_code == 200:
                     answer = response.json().get("answer", "No answer received.")
